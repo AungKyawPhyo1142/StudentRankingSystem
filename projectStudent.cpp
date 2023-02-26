@@ -6,6 +6,8 @@
 #include <fstream>
 #include <cmath>
 #include <sstream>
+#include <thread>
+
 using namespace std;
 
 class Student
@@ -68,61 +70,83 @@ public:
         return avg;
     }
 };
-
-Student checkPass(Student student)
-{
-    if (student.getMyanmarMarks() < 40 || student.getEnglishMarks() < 40 || student.getMathMarks() < 40)
-    {
-        student.status = "fail";
-    }
-    else
-    {
-        if ((student.getMyanmarMarks() >= 80 && student.getMyanmarMarks() <= 100) || (student.getEnglishMarks() >= 80 && student.getEnglishMarks() <= 100) || (student.getMathMarks() >= 80 && student.getMathMarks() <= 100))
-        {
-            student.status = "dist";
-        }
-        else
-        {
-            student.status = "pass";
-        }
-    }
-    return student;
-}
+/*------------------------------------- Utility Functions -------------------------------------*/
 
 int getTerminalWidth(){
-    
     // Get the width of the terminal
     struct winsize size;
     ioctl(STDOUT_FILENO, TIOCGWINSZ, &size);
     int width = size.ws_col;
-
     return width;
-
 }
 
-void printFullLine(int width){
+int getTerminalHeight(){
+    // Get the height of the terminal
+    struct winsize size;
+    ioctl(STDOUT_FILENO, TIOCGWINSZ, &size);
+    int height = size.ws_row;
+    return height;
+}
 
-    // Print the dotted line
+// make the string to reach the mid of the terminal using midX
+string addMidToText(string text,int midX){
+	return string(midX, ' ') + text;
+}
+
+// print the line from start to end of the terminal
+void printFullLine(int width){
     for (int i = 0; i < width; i++) {
         cout << "-";
     }
-
 }
 
-void printTextInMiddle(string title){
+// print the text to the center of the terminal (center of both width and height)
+void printTextInCenter(string text){	
+	int width = getTerminalWidth();
+    int height = getTerminalHeight();
+    int num_lines = count(text.begin(), text.end(), '\n') + 1;
+    int midX = (width-text.length())/2;
+    int midY = (height-num_lines)/2;
+    for (int i = 0; i < midY; i++)
+    {
+        cout<<endl;
+    }
+    for (int i = 0; i < midX; i++)
+    {
+        cout<<" ";
+    }
+	cout<<text;
+}
+
+// print text to the middle of the terminal (width only)
+void printTextInMiddle(string title,string color){
+
+	if(color=="red"){
+		color = "\033[1;31m";
+	}
+	else if(color=="green"){
+		color = "\033[1;32m";
+	}
+	else if(color=="yellow"){
+		color = "\033[1;33m";
+	}
+	else if(color=="blue"){
+		color = "\033[1;34m";
+	}
+	else{
+		color = "\033[0m";
+	}
 
     int width = getTerminalWidth();
-
     printFullLine(width);
-
     int middle = (width/2) - title.length()/2;
-
     string paddedText = string(middle, ' ') + title + string(middle, ' ');
-    cout<<"\n\033[0;32m"<<paddedText<<"\033[0;37m\n";
+    cout<<color<<paddedText<<"\033[0;37m\n";
     printFullLine(width);
 
 }
 
+// get the current date
 string getCurrentDate(){
 
     // Get the current timepoint
@@ -147,6 +171,106 @@ string getCurrentDate(){
 
 }
 
+// print a dotted line at the middle of the terminal (width only)
+void printLineInMiddle(){
+    string line = "------------------------------------------------------------------------";
+    int width = getTerminalWidth();
+    int middle = (width-line.length())/2;
+    string paddedline = string(middle, ' ') + line + string(middle, ' ');
+}
+
+// make the floating point to 2 decimal places
+string toTwoDecimal(float x){
+    stringstream sstream;
+    sstream << fixed << setprecision(2) << x;
+    return sstream.str();
+}
+
+// get the midX
+int getMidX(string text){
+	int width = getTerminalWidth();
+	return (width - text.length())/2;
+}
+
+// get the midY
+int getMidY(string text){
+	int height = getTerminalHeight();
+    int num_lines = count(text.begin(), text.end(), '\n') + 1;
+	return (height-num_lines)/2;
+}
+
+// convert the string to lower case
+string toLowercase(string text){
+    for (int i = 0; i < text.length(); i++)
+    {
+        if(text[i]==' ' || text[i]=='_' || text[i]=='-'){
+            continue;
+        }
+        else{
+            text[i] = 'a' + text[i] - 'A';
+        }
+    }
+    return text;
+}
+
+void animateText(string text){
+
+    int width = getTerminalWidth();
+    int height = getTerminalHeight();
+
+    int num_lines = count(text.begin(), text.end(), '\n') + 1;
+
+    int midX = (width-text.length())/2;
+    int midY = (height-num_lines)/2;
+
+    for (int i = 0; i < midY; i++)
+    {
+        cout<<endl;
+    }
+
+    for (int i = 0; i < midX; i++)
+    {
+        cout<<" ";
+    }
+
+    for(char c : text){
+        cout<<c<<flush;
+        usleep(100000);
+    }
+
+    usleep(500000);
+    system("clear");
+    
+}
+
+/*---------------------------------------------------------------------------------------------*/
+
+
+/*--------------------------- Functions related to Students & Processing ---------------------------*/
+
+Student checkPass(Student student)
+{
+    if (student.getMyanmarMarks() < 40 || student.getEnglishMarks() < 40 || student.getMathMarks() < 40)
+    {
+        student.status = "fail";
+    }
+    else
+    {
+        if ((student.getMyanmarMarks() >= 80 && student.getMyanmarMarks() <= 100) || (student.getEnglishMarks() >= 80 && student.getEnglishMarks() <= 100) || (student.getMathMarks() >= 80 && student.getMathMarks() <= 100))
+        {
+            student.status = "dist";
+        }
+        else
+        {
+            student.status = "pass";
+        }
+    }
+    return student;
+}
+
+
+
+
 Student getPassStudents(Student student)
 {
     if (student.status != "fail")
@@ -155,14 +279,7 @@ Student getPassStudents(Student student)
     }
 }
 
-void printLineInMiddle(){
 
-    string line = "------------------------------------------------------------------------";
-    cout<<"\nLength: "<<line.length()<<endl;
-    int width = getTerminalWidth();
-    int middle = (width-line.length())/2;
-    string paddedline = string(middle, ' ') + line + string(middle, ' ');
-}
 
 void printRanks(Student students[], int num)
 {
@@ -173,7 +290,7 @@ void printRanks(Student students[], int num)
     cout << "\n\n\t\t------------------------------------------------------------------------";
     cout << "\n\t\t\t\tStudents Marks Table (Pass & Distinctions)\n";
     cout << "\t\t------------------------------------------------------------------------\n";
-    cout << "\t\tRank\tName\t\tMyan\tEng\tMath\tTotal\tAvg\tStatus\n";
+    cout << "\t\t\033[1mRank\tName\t\tMyan\tEng\tMath\tTotal\tAvg\tStatus\033[0m\n";
     cout << "\t\t------------------------------------------------------------------------\n";
 
     for (int i = 0; i < num; i++)
@@ -257,14 +374,6 @@ void printFailStudents(Student students[], int num)
     }
 }
 
-string toTwoDecimal(float x){
-    
-    stringstream sstream;
-    sstream << fixed << setprecision(2) << x;
-
-    return sstream.str();
-
-}
 
 string sortStudents(Student students[],int len){
     
@@ -323,21 +432,6 @@ string sortStudents(Student students[],int len){
     
 }
 
-string toLowercase(string text){
-
-    for (int i = 0; i < text.length(); i++)
-    {
-        if(text[i]==' ' || text[i]=='_' || text[i]=='-'){
-            continue;
-        }
-        else{
-            text[i] = 'a' + text[i] - 'A';
-        }
-    }
-
-    return text;
-
-}
 
 void saveData(Student passStudents[],int passLength,Student failStudents[],int failLength,string className,string date){
 
@@ -392,11 +486,38 @@ void StudentRankingSystem()
     string className;
     char ch;
 
-    cout<<"\nEnter the class name of the students: ";
-    cin>>className;
+	int midX;
+	int midY;
+	string tempText;
 
-    cout<<"\n(1)Do with Current Date\n(2)Enter Custom Date: ";
-    cin>>m;
+	printTextInCenter("Class Name: ");
+	cin>>className;
+
+	system("clear");
+
+	printTextInMiddle("SELECT AN OPTION","");
+	cout<<"\n\n";
+
+	tempText = "(1) Current Date";
+	midX = getMidX(tempText);
+	tempText = addMidToText(tempText,midX);
+	cout<<setw(midX)<<tempText<<endl<<endl;
+
+	tempText = "(2) Custom Date";
+	midX = getMidX(tempText);
+	tempText = addMidToText(tempText,midX);
+	cout<<setw(midX)<<tempText<<endl<<endl;
+
+	printFullLine(getTerminalWidth());
+	cout<<endl;
+
+	tempText = "ENTER AN OPTION: ";
+	midX = getMidX(tempText);
+	tempText = addMidToText(tempText,midX);
+	cout<<tempText;
+	cin>>m;
+
+	system("clear");
 
     if(m==1){
         date = getCurrentDate();
@@ -436,7 +557,7 @@ void StudentRankingSystem()
 
     string title =  className+" ("+date+")";
 
-    printTextInMiddle(title);
+    printTextInMiddle(title,"green");
     cout<<"\n";
     cout << "\nTotal Pass Students: " << pass;
     cout << "\nTotal Failed Students: " << fail;
@@ -471,7 +592,7 @@ void StudentRankingSystem()
     else{
         cout<<"\n\n";
         string text = "\033[0m No students from \033[31m"+className+"\033[0m have pass the exam";
-        printTextInMiddle(text);
+        printTextInMiddle(text,"");
         cout<<"\n";
     }
 
@@ -482,7 +603,7 @@ void StudentRankingSystem()
     else{
         cout<<"\n\n";
         string text = "\033[0m All the students from \033[35m"+className+"\033[0m have pass the exam";
-        printTextInMiddle(text);
+        printTextInMiddle(text,"");
         cout<<"\n";
     }
 
@@ -497,12 +618,15 @@ void StudentRankingSystem()
 
 }
 
+/*--------------------------------------------------------------------------------------------------*/
 
 int main()
 {
     char choice;
 
     system("clear");
+
+    animateText("Welcome from student ranking system!");
 
     do
     {
@@ -518,7 +642,11 @@ int main()
         cin>>choice;
 
     } while (choice=='y');
-    
-    cout << "\n\n";
+
+    system("clear");
+
+    animateText("Thank you & Goodbye...");
+
+    cout<<"\n\n";
     return 0;
 }
