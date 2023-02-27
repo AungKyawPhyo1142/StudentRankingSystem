@@ -10,6 +10,7 @@
 
 using namespace std;
 
+/*------------------------------------- Student Class -------------------------------------*/
 class Student
 {
 private:
@@ -70,6 +71,9 @@ public:
         return avg;
     }
 };
+
+/*-----------------------------------------------------------------------------------------*/
+
 /*------------------------------------- Utility Functions -------------------------------------*/
 
 int getTerminalWidth(){
@@ -243,6 +247,33 @@ void animateText(string text){
     
 }
 
+void loginProcess(){
+
+    string password;
+    bool login = false;
+
+        string text = "Enter Password: ";
+
+    while(!login){
+        printTextInCenter(text);
+        cout<<endl;
+        password = getpass("");
+
+        if(password=="12345"){
+            login=true;
+        }
+        else{
+            login=false;
+            system("clear");
+        }
+
+    }
+
+    system("clear");
+    animateText("\033[1;34mYour system is loading...\033[0m");
+    
+}
+
 /*---------------------------------------------------------------------------------------------*/
 
 
@@ -268,9 +299,6 @@ Student checkPass(Student student)
     return student;
 }
 
-
-
-
 Student getPassStudents(Student student)
 {
     if (student.status != "fail")
@@ -278,8 +306,6 @@ Student getPassStudents(Student student)
         return student;
     }
 }
-
-
 
 void printRanks(Student students[], int num)
 {
@@ -323,7 +349,6 @@ void printRanks(Student students[], int num)
     
     cout << "\t\t------------------------------------------------------------------------\n";
 
-
 }
 
 void sortPassStudents(Student students[], int num)
@@ -351,7 +376,7 @@ void printFailStudents(Student students[], int num)
     cout << "\n\n\n\t\t------------------------------------------------------------------------";
     cout << "\n\t\t\t\t\tStudents Marks Table (Fail)\n";
     cout << "\t\t------------------------------------------------------------------------\n";
-    cout << "\t\tName\t\tMyan\tEng\tMath\tTotal\tAvg\tStatus\n";
+    cout << "\t\t\033[1mName\t\tMyan\tEng\tMath\tTotal\tAvg\tStatus\033[0m\n";
     cout << "\t\t------------------------------------------------------------------------\n";
 
     for (int i = 0; i < num; i++)
@@ -373,7 +398,6 @@ void printFailStudents(Student students[], int num)
         }
     }
 }
-
 
 string sortStudents(Student students[],int len){
     
@@ -432,7 +456,6 @@ string sortStudents(Student students[],int len){
     
 }
 
-
 void saveData(Student passStudents[],int passLength,Student failStudents[],int failLength,string className,string date){
 
     ofstream outfile;    
@@ -459,7 +482,7 @@ void saveData(Student passStudents[],int passLength,Student failStudents[],int f
     
     if(outfile.is_open()){
 
-        // get the field names
+        // write the field names
         outfile<<"Ranks,Name,Myanmar,English,Math,Total,Avg,Status\n";
         
         data = sortStudents(passStudents,passLength);
@@ -529,7 +552,6 @@ void StudentRankingSystem()
 
     cout << "\nHow many student(s)?: ";
     cin >> num;
-
 
     Student students[num];
 
@@ -626,7 +648,9 @@ int main()
 
     system("clear");
 
-    animateText("Welcome from student ranking system!");
+    animateText("Welcome from the student ranking system!");
+
+    loginProcess();
 
     do
     {
